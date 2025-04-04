@@ -1,28 +1,45 @@
-import React from "react";
+import React,{useState} from "react";
 
-//include images into your bundle
-import rigoImage from "../../img/rigo-baby.jpg";
+
 
 //create your first component
 const Home = () => {
-	return (
-		<div className="text-center">
-            
+	const [posts,setPosts] = useState([]);
+    
+    fetch("https://jsonplaceholder.typicode.com/posts")
+    .then((resp)=> resp.json())
+    .then((data)=> setPosts(data))
 
-			<h1 className="text-center mt-5">Hello Rigo!</h1>
-			<p>
-				<img src={rigoImage} />
-			</p>
-			<a href="#" className="btn btn-success">
-				If you see this green button... bootstrap is working...
-			</a>
-			<p>
-				Made by{" "}
-				<a href="http://www.4geeksacademy.com">4Geeks Academy</a>, with
-				love!
-			</p>
-		</div>
-	);
+
+    const options = {
+            method: "POST",
+            headers:{"Content-Type": "application/json"},
+
+            body: JSON.stringify({
+                title: 'foo',
+                body: 'bar',
+                userId: 1,
+      }),
+    };
+
+    fetch("https://jsonplaceholder.typicode.com/posts", options)
+    .then((resp)=> resp.json())
+    .then((data)=> console.log("Post Status:",data))
+
+    return(
+        <div className="text-center">
+            {posts.length > 0 ? 
+            
+            posts.map((item) => {
+                return(
+                    <div>{item.title}</div>
+                )
+        
+            })
+            
+            : "no posts available"}
+        </div>
+    )
 };
 
 export default Home;
