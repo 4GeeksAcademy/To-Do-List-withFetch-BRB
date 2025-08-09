@@ -1,18 +1,17 @@
-import React, { useEffect, useState } from "react";
+ import React, { useEffect, useState } from "react";
 
 const Home = () => {
     const [posts, setPosts] = useState([]);
     const [newTask, setNewTask] = useState("");
+    const username = "b123"; // ✅ Your custom username
 
-    const username = "b123"; // ✅ Your chosen username
-
-    // ✅ Create user once when app loads
+    // ✅ Create user (once) on component load
     useEffect(() => {
         const createUser = () => {
             return fetch(`https://playground.4geeks.com/todo/users/${username}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify([]) // ✅ REQUIRED by API
+                body: JSON.stringify([]) // ✅ API requires empty array
             });
         };
 
@@ -27,11 +26,11 @@ const Home = () => {
             })
             .catch((error) => {
                 console.warn("User may already exist:", error);
-                getAgenda(); // still try to fetch tasks
+                getAgenda(); // still fetch tasks anyway
             });
     }, []);
 
-    // ✅ Fetch tasks
+    // ✅ Get all tasks for the user
     const getAgenda = () => {
         fetch(`https://playground.4geeks.com/todo/users/${username}`)
             .then((resp) => resp.json())
@@ -42,22 +41,29 @@ const Home = () => {
             .catch((error) => console.error("Fetch failed:", error));
     };
 
-    // ✅ Add a new task
+    // ✅ Add a new task (using /todos/:username)
     const addTask = () => {
         if (newTask.trim() === "") return;
 
-        fetch("https://playground.4geeks.com/todo/todos", { // ✅ Correct endpoint
+        const task = {
+            label: newTask,
+            is_done: false
+        };
+
+        fetch(`https://playground.4geeks.com/todo/todos/${username}`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                label: newTask,
-                is_done: false,
-                user: username
-            })
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(task)
         })
-            .then((resp) => resp.json())
+            .then((resp) => {
+                console.log("Response OK?", resp.ok);
+                console.log("Status:", resp.status);
+                return resp.json();
+            })
             .then((data) => {
-                console.log("Add task response:", data);
+                console.log("Created task:", data);
                 setNewTask("");
                 getAgenda();
             })
@@ -90,7 +96,7 @@ const Home = () => {
                 posts.map((item, index) => (
                     <div key={item.id || index}>
                         {item.label}
-                        <button onClick={() => deleteTask(item.id)}>❌</button>
+                        <button onClick={() => deleteTask(item.id)}>x</button>
                     </div>
                 ))
             ) : (
@@ -98,7 +104,7 @@ const Home = () => {
             )}
 
             <button onClick={() => setPosts([])}>
-                Clear All Tasks (Local Only)
+                Clear All Tasks
             </button>
         </div>
     );
